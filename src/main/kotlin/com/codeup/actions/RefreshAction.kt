@@ -2,7 +2,6 @@ package com.codeup.actions
 
 import com.codeup.findings.FindingsStore
 import com.intellij.openapi.actionSystem.*
-import com.intellij.openapi.wm.ToolWindowManager
 
 class RefreshAction : AnAction("Refresh Findings") {
     override fun actionPerformed(e: AnActionEvent) {

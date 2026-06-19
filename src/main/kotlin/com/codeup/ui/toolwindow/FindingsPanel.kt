@@ -3,6 +3,7 @@ package com.codeup.ui.toolwindow
 import com.codeup.findings.FindingsStore
 import com.codeup.model.Finding
 import com.codeup.model.Severity
+import com.codeup.ui.detail.FindingDetailPanel
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
@@ -20,6 +21,7 @@ class FindingsPanel(private val project: Project) : JPanel(BorderLayout()) {
 
     val treeModel = FindingsTreeModel()
     private val tree = SimpleTree(treeModel)
+    private val detailPanel = FindingDetailPanel(project)
 
     init {
         tree.isRootVisible = false
@@ -29,11 +31,20 @@ class FindingsPanel(private val project: Project) : JPanel(BorderLayout()) {
                 if (e.clickCount == 2) onDoubleClick()
             }
         })
+        tree.addTreeSelectionListener {
+            val node = tree.lastSelectedPathComponent as? DefaultMutableTreeNode ?: return@addTreeSelectionListener
+            val leaf = node.userObject as? FindingsTreeNode.Leaf ?: return@addTreeSelectionListener
+            detailPanel.show(leaf.finding)
+        }
+
+        val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT, JBScrollPane(tree), detailPanel)
+        splitPane.resizeWeight = 0.4
+        splitPane.dividerSize = 4
+
         add(buildToolbar(), BorderLayout.NORTH)
-        add(JBScrollPane(tree), BorderLayout.CENTER)
+        add(splitPane, BorderLayout.CENTER)
         refresh()
 
-        // Subscribe to store changes
         FindingsStore.getInstance(project).addChangeListener { SwingUtilities.invokeLater { refresh() } }
     }
 

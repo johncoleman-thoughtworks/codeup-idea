@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.qbyteconsulting.codeup"
-version = "1.0.1"
+version = "1.0.2"
 
 repositories {
     mavenCentral()
@@ -37,7 +37,7 @@ dependencies {
 intellijPlatform {
     pluginConfiguration {
         name = "Codeup"
-        version = "1.0.1"
+        version = "1.0.2"
         ideaVersion {
             sinceBuild = "243"
             untilBuild = provider { null }
