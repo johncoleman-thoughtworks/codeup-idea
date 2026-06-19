@@ -1,0 +1,207 @@
+<idea-plugin>
+    <id>com.qbyteconsulting.codeup</id>
+    <name>Codeup</name>
+    <vendor email="john.coleman@thoughtworks.com" url="https://github.com/johncoleman-thoughtworks/codeup-idea">Codeup</vendor>
+
+    <description><![CDATA[
+        <p>Surfaces anti-patterns in your codebase using the Anthropic Claude API. Findings are
+        persisted as YAML files under <code>.codeup/</code> so they travel with the repo and go
+        through PR review. The <code>.codeup/</code> format is compatible with the
+        Codeup VS Code extension — teams on mixed editors share a single findings directory.</p>
+
+        <h2>What it detects</h2>
+        <p>107 catalogued patterns spanning:</p>
+        <ul>
+            <li><b>Single-file smells</b> — god class, anemic domain model, long methods, primitive obsession, deep nesting, high cognitive complexity, error swallowing, function-name mismatches.</li>
+            <li><b>Inheritance &amp; OO shape</b> — non-exclusive subtypes, procedural shell classes (Manager/Handler/Processor), base classes that depend on subclasses, parallel inheritance hierarchies.</li>
+            <li><b>Cross-file structure</b> — type leakage across boundaries, shotgun surgery, feature envy with neighbour context.</li>
+            <li><b>Module dependency</b> — deterministic cyclic-dependency detection (Tarjan SCC), layer-boundary violations driven by an optional <code>.codeup/intent.yaml</code>.</li>
+            <li><b>Service-level</b> — distributed monolith indicators, shared-database anti-patterns, reach-through reads, god service.</li>
+            <li><b>Data / persistence</b> — N+1 queries, lost updates, cache-as-source-of-truth, EAV overuse, god tables.</li>
+            <li><b>Exception handling</b> — overbroad catches, lossy translation, exceptions as validation, log-and-rethrow cargo cult.</li>
+            <li><b>Code security (10 patterns)</b> — untrusted input in interpreting contexts, path traversal, unsafe deserialization, inconsistent validation across ingress paths, credentials scoped to identity rather than destination, and more.</li>
+            <li><b>Process / judgement</b> — premature optimisation/abstraction, copy-paste programming, golden hammer, lava flow.</li>
+        </ul>
+
+        <h2>Setup</h2>
+        <ol>
+            <li><b>Install</b> the plugin from the marketplace (or install the ZIP via <b>Settings → Plugins → ⚙ → Install Plugin from Disk…</b>).</li>
+            <li><b>Set an Anthropic API key</b> via <b>Tools → Codeup → Set Anthropic API Key</b>. The key is stored in the IDE's secure credential store (macOS Keychain / Windows DPAPI / Linux libsecret) — never written to disk or committed to your repo.</li>
+            <li><b>Open a project</b> and run <b>Tools → Codeup → Run Full Scan</b>. The first run shows a cost estimate before making any API calls.</li>
+        </ol>
+        <p>An Anthropic API key is required. Get one at <a href="https://console.anthropic.com/">console.anthropic.com</a>.
+        The default model is <code>claude-sonnet-4-6</code>, configurable via <b>Settings → Tools → Codeup</b>.</p>
+
+        <h2>Daily flow</h2>
+        <ol>
+            <li><b>Run a scan</b> — <b>Tools → Codeup → Run Full Scan</b> (whole project) or <b>Scan Current File</b>. A cost estimate is shown before any full scan.</li>
+            <li><b>Triage findings</b> in the Codeup tool window (right panel):
+                <ul>
+                    <li>Click a finding to open the file at the right line.</li>
+                    <li><b>Confirm</b> — becomes a positive exemplar in <code>.codeup/knowledge/exemplars.yaml</code>.</li>
+                    <li><b>Dismiss…</b> — prompts for a rationale saved to <code>.codeup/knowledge/dismissals.yaml</code>; future scans learn from it.</li>
+                    <li><b>Mark Fixed</b> once the change is made.</li>
+                </ul>
+            </li>
+            <li><b>Rescan</b> — unchanged files come from cache (no API cost).</li>
+        </ol>
+
+        <h2>Commands (Tools → Codeup)</h2>
+        <table>
+            <tr><td><b>Run Full Scan</b></td><td>Scan every supported file. Shows cost estimate first.</td></tr>
+            <tr><td><b>Scan Current File</b></td><td>Scan the active editor file only.</td></tr>
+            <tr><td><b>Scan Open Tabs</b></td><td>Scan all currently open editor tabs.</td></tr>
+            <tr><td><b>Suggest Architectural Intent</b></td><td>Draft a <code>.codeup/intent.yaml</code> from your project layout.</td></tr>
+            <tr><td><b>Set / Clear Anthropic API Key</b></td><td>Manage the API key in the IDE credential store.</td></tr>
+            <tr><td><b>Check for Updates</b></td><td>Check GitHub Releases for a newer version (also auto-runs on startup).</td></tr>
+        </table>
+
+        <h2>Settings (Settings → Tools → Codeup)</h2>
+        <table>
+            <tr><td><b>Model</b></td><td>Anthropic model used for analysis (default: <code>claude-sonnet-4-6</code>).</td></tr>
+            <tr><td><b>Scan on save</b></td><td>Run an incremental scan on file save (default: off).</td></tr>
+            <tr><td><b>Findings directory</b></td><td>Where findings YAML files live (default: <code>.codeup/findings</code>).</td></tr>
+            <tr><td><b>File size warn / critical (bytes)</b></td><td>Thresholds for <code>oversized-file</code> findings (30 000 / 60 000).</td></tr>
+            <tr><td><b>Enable update checks</b></td><td>Poll GitHub Releases for new versions on startup.</td></tr>
+        </table>
+
+        <h2>Data handling</h2>
+        <p>Codeup sends source code to the Anthropic API. <b>If you point Codeup at a client
+        repository, source from that repository will leave your machine.</b> Confirm this is
+        acceptable under any NDA or data-handling agreement that applies.</p>
+        <p><b>What gets sent</b> (over HTTPS to <code>api.anthropic.com</code>): the full text of
+        each analysed file, up to 6 neighbour files (truncated to 8 000 chars each), dismissal
+        rationales and exemplars from <code>.codeup/knowledge/</code>, and catalogue pattern hints.</p>
+        <p><b>What is never sent</b>: files excluded by <code>.gitignore</code> or
+        <code>.codeupignore</code>, files over 512 KB, unchanged files (cache hit), deterministic
+        findings (cycles, layer violations), or your API key as content.</p>
+        <p>Anthropic's commercial API terms: inputs and outputs are not used to train models.
+        Zero Data Retention agreements and AWS Bedrock / GCP Vertex deployments are available for
+        stricter requirements.</p>
+    ]]></description>
+
+    <change-notes><![CDATA[
+        <h2>1.0.1</h2>
+        <ul>
+            <li>Initial Marketplace release.</li>
+            <li>107 catalogued anti-patterns across single-file, OO shape, cross-file, module dependency, service-level, data/persistence, exception handling, security, and process categories.</li>
+            <li>Findings persisted as YAML under <code>.codeup/</code> — compatible with the Codeup VS Code extension.</li>
+            <li>Triage workflow: Confirm, Dismiss (with rationale), Mark Fixed.</li>
+            <li>Incremental scanning with file-level cache (no API cost for unchanged files).</li>
+            <li>Cost estimate shown before any full-project scan.</li>
+        </ul>
+    ]]></change-notes>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+
+        <!-- Tool window -->
+        <toolWindow id="Codeup"
+                    anchor="right"
+                    factoryClass="com.codeup.ui.toolwindow.FindingsToolWindowFactory"
+                    icon="/icons/codeup-icon.svg"/>
+
+        <!-- Status bar widget -->
+        <statusBarWidgetFactory id="com.codeup.statusbar"
+                                implementation="com.codeup.ui.statusbar.CodeupStatusBarWidgetFactory"
+                                order="last"/>
+
+        <!-- Application-level settings service -->
+        <applicationService serviceImplementation="com.codeup.settings.CodeupSettings"/>
+
+        <!-- Project-level services -->
+        <projectService serviceImplementation="com.codeup.findings.FindingsStore"/>
+        <projectService serviceImplementation="com.codeup.knowledge.KnowledgeStore"/>
+        <projectService serviceImplementation="com.codeup.scan.CodeupProjectService"/>
+
+        <!-- Settings page under Tools -->
+        <applicationConfigurable parentId="tools"
+                                 id="com.codeup.settings"
+                                 displayName="Codeup"
+                                 instance="com.codeup.settings.CodeupSettingsConfigurable"/>
+
+        <!-- Notification group for update-check balloon -->
+        <notificationGroup id="Codeup" displayType="BALLOON" isLogByDefault="false"/>
+
+        <!-- Editor highlight listener (registers on startup via projectService) -->
+
+    </extensions>
+
+    <!-- Startup: initialize stores, decorations, update check -->
+    <projectListeners>
+        <listener class="com.codeup.ui.editor.FindingsEditorListener"
+                  topic="com.intellij.openapi.fileEditor.FileEditorManagerListener"/>
+    </projectListeners>
+
+    <actions>
+        <!-- Declare the toolbar group first so add-to-group references below resolve in order -->
+        <group id="com.codeup.FindingsToolbar"/>
+
+        <group id="com.codeup.actions.CodeupMenu" text="Codeup" popup="true">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+
+            <action id="codeup.scan.full"
+                    class="com.codeup.actions.ScanFullAction"
+                    text="Run Full Scan"
+                    description="Scan all files in the project for architectural anti-patterns"/>
+
+            <action id="codeup.scan.file"
+                    class="com.codeup.actions.ScanFileAction"
+                    text="Scan Current File"
+                    description="Scan the currently open file"/>
+
+            <action id="codeup.scan.openTabs"
+                    class="com.codeup.actions.ScanOpenTabsAction"
+                    text="Scan Open Tabs"
+                    description="Scan all currently open editor tabs"/>
+
+            <separator/>
+
+            <action id="codeup.intent.suggest"
+                    class="com.codeup.actions.SuggestIntentAction"
+                    text="Suggest Architectural Intent"
+                    description="Draft a .codeup/intent.yaml based on your project structure"/>
+
+            <separator/>
+
+            <action id="codeup.apiKey.set"
+                    class="com.codeup.actions.SetApiKeyAction"
+                    text="Set Anthropic API Key"
+                    description="Store the Anthropic API key in the system credential store"/>
+
+            <action id="codeup.apiKey.clear"
+                    class="com.codeup.actions.ClearApiKeyAction"
+                    text="Clear Anthropic API Key"
+                    description="Remove the stored Anthropic API key"/>
+
+            <separator/>
+
+            <action id="codeup.updateCheck.now"
+                    class="com.codeup.actions.CheckUpdatesAction"
+                    text="Check for Updates"
+                    description="Check GitHub Releases for a newer version of Codeup"/>
+        </group>
+
+        <!-- Tool window toolbar actions -->
+        <action id="codeup.findings.refresh"
+                class="com.codeup.actions.RefreshAction"
+                text="Refresh Findings"
+                icon="AllIcons.Actions.Refresh">
+            <add-to-group group-id="com.codeup.FindingsToolbar" anchor="first"/>
+        </action>
+
+        <group id="com.codeup.GroupByMenu" text="Group By" popup="true" icon="AllIcons.Actions.GroupBy">
+            <add-to-group group-id="com.codeup.FindingsToolbar" anchor="last"/>
+            <action id="codeup.findings.groupBy.severity"
+                    class="com.codeup.actions.GroupBySeverityAction"
+                    text="Severity"/>
+            <action id="codeup.findings.groupBy.category"
+                    class="com.codeup.actions.GroupByCategoryAction"
+                    text="Category"/>
+            <action id="codeup.findings.groupBy.status"
+                    class="com.codeup.actions.GroupByStatusAction"
+                    text="Status"/>
+        </group>
+    </actions>
+</idea-plugin>
