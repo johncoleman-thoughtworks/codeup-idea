@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.qbyteconsulting.codeup</id>
     <name>Codeup</name>
-    <vendor email="john.coleman@thoughtworks.com" url="https://github.com/johncoleman-thoughtworks/codeup-idea">Codeup</vendor>
+    <vendor email="qbyteconsulting@gmail.com" url="https://github.com/johncoleman-thoughtworks/codeup-idea">Codeup</vendor>
 
     <description><![CDATA[
         <p>Surfaces anti-patterns in your codebase using the Anthropic Claude API. Findings are
@@ -81,6 +81,15 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <h2>1.0.2</h2>
+        <ul>
+            <li>Inline finding detail panel embedded in a split pane below the findings tree — details visible on selection without a separate view.</li>
+            <li>Status-aware action buttons: available actions update as a finding moves through Unconfirmed → Confirmed → Dismissed / Fixed, with a Reopen action on all terminal states.</li>
+            <li>History table in the detail panel showing every status transition with timestamp and note.</li>
+            <li>Priority and confidence now shown alongside severity in the detail view.</li>
+            <li>Direct <b>Open Code</b> link navigates to the exact file and line of a finding.</li>
+            <li>Explanation and remediation text rendered with paragraph breaks.</li>
+        </ul>
         <h2>1.0.1</h2>
         <ul>
             <li>Initial Marketplace release.</li>
