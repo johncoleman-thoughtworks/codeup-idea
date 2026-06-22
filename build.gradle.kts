@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "com.qbyteconsulting.codeup"
-version = "1.0.2"
+version = "1.0.3"
 
 repositories {
     mavenCentral()
@@ -31,13 +31,14 @@ dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testImplementation("org.assertj:assertj-core:3.25.3")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 intellijPlatform {
     pluginConfiguration {
         name = "Codeup"
-        version = "1.0.2"
+        version = "1.0.3"
         ideaVersion {
             sinceBuild = "243"
             untilBuild = provider { null }

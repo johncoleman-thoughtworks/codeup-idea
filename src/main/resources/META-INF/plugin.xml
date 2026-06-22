@@ -81,6 +81,12 @@
     ]]></description>
 
     <change-notes><![CDATA[
+        <h2>1.0.3</h2>
+        <ul>
+            <li><b>Suggest Architectural Intent</b> — completely reworked: Claude now receives a structured project summary (top directories by file count + most-frequent cross-directory imports) and returns layer rules via a typed tool call instead of free-text YAML. Result is a clean, commented <code>intent.yaml</code>; falls back to heuristic default if the model call fails.</li>
+            <li>HTTP timeouts added to the Anthropic client (30 s connect/write, 120 s read) — prevents requests from hanging indefinitely on slow or dropped connections.</li>
+            <li>Fixed a <code>.gitignore</code> matching bug where plain-name patterns (e.g. <code>.git</code>) did not match directory paths that ended with a trailing slash.</li>
+        </ul>
         <h2>1.0.2</h2>
         <ul>
             <li>Inline finding detail panel embedded in a split pane below the findings tree — details visible on selection without a separate view.</li>

@@ -16,7 +16,7 @@ class FindingsToolWindowFactory : ToolWindowFactory {
 
         // Start update checker
         Thread {
-            UpdateChecker(project, "1.0.2").checkOnActivation()
+            UpdateChecker(project, "1.0.3").checkOnActivation()
         }.also { it.isDaemon = true }.start()
     }
 }

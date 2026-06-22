@@ -8,15 +8,21 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 class AnthropicClient(
     private val apiKeyProvider: () -> String?,
     private val modelId: String = "claude-sonnet-4-6",
+    private val baseUrl: String = "https://api.anthropic.com",
 ) : LLMClient {
 
     private val log = Logger.getInstance(AnthropicClient::class.java)
     private val mapper = jacksonObjectMapper()
-    private val http = OkHttpClient.Builder().build()
+    private val http = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(120, TimeUnit.SECONDS)
+        .build()
 
     override fun model() = modelId
     override fun provider() = "anthropic"
@@ -45,7 +51,7 @@ class AnthropicClient(
 
         val requestBody = mapper.writeValueAsString(body).toRequestBody("application/json".toMediaType())
         val httpReq = Request.Builder()
-            .url("https://api.anthropic.com/v1/messages")
+            .url("$baseUrl/v1/messages")
             .header("x-api-key", apiKey)
             .header("anthropic-version", "2023-06-01")
             .header("content-type", "application/json")

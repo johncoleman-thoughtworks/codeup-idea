@@ -45,7 +45,10 @@ class GitignoreMatcher {
         fun matchGlob(path: String, pattern: String): Boolean {
             // Normalize: trailing slash means match directory and everything under it
             val effectivePattern = if (pattern.endsWith("/")) "${pattern}**" else pattern
-            return globMatch(path, effectivePattern) || globMatch("$path/", effectivePattern)
+            // Strip trailing slash from path before matching so that a plain-name
+            // pattern like ".git" matches the directory check path ".git/"
+            val normalizedPath = path.trimEnd('/')
+            return globMatch(normalizedPath, effectivePattern) || globMatch("$normalizedPath/", effectivePattern)
         }
 
         private fun globMatch(str: String, pattern: String): Boolean {
