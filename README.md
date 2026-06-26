@@ -22,7 +22,7 @@ See [`src/main/resources/catalogue/default.yaml`](src/main/resources/catalogue/d
 
 ## Setup
 
-1. **Install** — build from source (`./gradlew buildPlugin`) and install the resulting ZIP via **Settings → Plugins → ⚙ → Install Plugin from Disk…**, or launch a sandboxed IDE with `./gradlew runIde`.
+1. **Install** — build from source (`./gradlew buildPlugin`) and install the resulting ZIP via **Settings → Plugins → ⚙ → Install Plugin from Disk…**, or launch a sandboxed IDE with `./gradlew runIde`. Also available on [JETBRAINS Marketplace](https://plugins.jetbrains.com/plugin/32381-codeup).
 2. **Set an Anthropic API key** — go to **Tools → Codeup → Set Anthropic API Key**. The key is stored in the IDE's secure credential store (macOS Keychain / Windows DPAPI / Linux libsecret via `PasswordSafe`) — never written to disk in plain text or committed to your repo.
 3. **Open a project** and run **Tools → Codeup → Run Full Scan**. The first run shows a cost estimate before making any API calls.
 
